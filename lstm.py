@@ -58,9 +58,23 @@ class LSTMCell(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+
+
+        f_t = torch.sigmoid(self.forget_gate(combined))   # Forget gate
+        i_t = torch.sigmoid(self.input_gate(combined))    # Input gate
+        o_t = torch.sigmoid(self.output_gate(combined))   # Output gate
+        g_t = torch.tanh(self.candidate_cell(combined))   # Candidate cell state
+
+        # Update cell state
+        c_t = f_t * c + i_t * g_t
+        
+        # Compute new hidden state
+        h_t = o_t * torch.tanh(c_t)
+        
+        return h_t, c_t        
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
 ########################################################################################
 ########################################################################################
@@ -117,6 +131,8 @@ class LSTM(nn.Module):
         
         # Initialize hidden and cell states if not provided.
         if hx is None:
+            h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=x.device, dtype=x.dtype)
+            c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=x.device, dtype=x.dtype)
             # ==========================
             # TODO: Write your code here
             # ==========================
@@ -138,11 +154,14 @@ class LSTM(nn.Module):
             for t in range(seq_len):
                 # ==========================
                 # TODO: Write your code here
+                x_t = output[:, t, :]  # Extract x_t from "output" tensor
+                h_t, c_t = cell(x_t, (h_t, c_t))  # Compute new h_t and c_t
+
                 # ==========================
                 # Extract x_t from "output" tensor, and compute h_t, c_t using the LSTM "cell" based on x_t, h_t, and c_t
 
-                x_t = None  # (batch_size, input_size) if layer_idx == 0, (batch_size, hidden_size) otherwise
-                h_t, c_t = None, None  # (batch_size, hidden_size), (batch_size, hidden_size)
+                # x_t = None  # (batch_size, input_size) if layer_idx == 0, (batch_size, hidden_size) otherwise
+                # h_t, c_t = None, None  # (batch_size, hidden_size), (batch_size, hidden_size)
 
                 layer_outputs.append(h_t.unsqueeze(1))  # (batch_size, 1, hidden_size)
             
@@ -229,9 +248,14 @@ class LSTMLM(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+        embedded = self.embedding(x)  # Shape: (batch_size, sequence_length, embedding_size)
+        lstm_out, hidden_states = self.lstm(embedded, hidden_states)  # lstm_out: (batch_size, sequence_length, hidden_size)
+        logits = self.classifier(lstm_out)  # Shape: (batch_size, sequence_length, vocabulary_size)
+        return logits, hidden_states
+
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
 ########################################################################################
 ########################################################################################
