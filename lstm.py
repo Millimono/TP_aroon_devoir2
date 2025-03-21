@@ -60,15 +60,15 @@ class LSTMCell(nn.Module):
         # TODO: Write your code here
 
 
-        f_t = torch.sigmoid(self.forget_gate(combined))   # Forget gate
-        i_t = torch.sigmoid(self.input_gate(combined))    # Input gate
-        o_t = torch.sigmoid(self.output_gate(combined))   # Output gate
-        g_t = torch.tanh(self.candidate_cell(combined))   # Candidate cell state
+        f_t = torch.sigmoid(self.forget_gate(combined))   # The Forget gate
+        i_t = torch.sigmoid(self.input_gate(combined))    # The Input gate
+        o_t = torch.sigmoid(self.output_gate(combined))   # The Output gate
+        g_t = torch.tanh(self.candidate_cell(combined))   # The Candidate cell state
 
-        # Update cell state
+        # The Update cell state
         c_t = f_t * c + i_t * g_t
         
-        # Compute new hidden state
+        # The Compute new hidden state
         h_t = o_t * torch.tanh(c_t)
         
         return h_t, c_t        
@@ -125,7 +125,7 @@ class LSTM(nn.Module):
             h_n (torch.Tensor): Final hidden states (num_layers, batch_size, hidden_size).
             c_n (torch.Tensor): Final cell states (num_layers, batch_size, hidden_size).
         """
-        raise NotImplementedError
+        # raise NotImplementedError
 
         batch_size, seq_len, _ = x.size() 
         
@@ -136,7 +136,7 @@ class LSTM(nn.Module):
             # ==========================
             # TODO: Write your code here
             # ==========================
-            raise NotImplementedError
+            # raise NotImplementedError
         else:
             h0, c0 = hx  # (num_layers, batch_size, hidden_size), (num_layers, batch_size, hidden_size)
 
@@ -154,8 +154,8 @@ class LSTM(nn.Module):
             for t in range(seq_len):
                 # ==========================
                 # TODO: Write your code here
-                x_t = output[:, t, :]  # Extract x_t from "output" tensor
-                h_t, c_t = cell(x_t, (h_t, c_t))  # Compute new h_t and c_t
+                x_t = output[:, t, :]  
+                h_t, c_t = cell(x_t, (h_t, c_t)) 
 
                 # ==========================
                 # Extract x_t from "output" tensor, and compute h_t, c_t using the LSTM "cell" based on x_t, h_t, and c_t
@@ -248,9 +248,9 @@ class LSTMLM(nn.Module):
 
         # ==========================
         # TODO: Write your code here
-        embedded = self.embedding(x)  # Shape: (batch_size, sequence_length, embedding_size)
-        lstm_out, hidden_states = self.lstm(embedded, hidden_states)  # lstm_out: (batch_size, sequence_length, hidden_size)
-        logits = self.classifier(lstm_out)  # Shape: (batch_size, sequence_length, vocabulary_size)
+        embedded = self.embedding(x)  
+        lstm_out, hidden_states = self.lstm(embedded, hidden_states) 
+        logits = self.classifier(lstm_out)
         return logits, hidden_states
 
         # ==========================
