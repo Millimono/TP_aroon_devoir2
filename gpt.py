@@ -47,9 +47,17 @@ class LayerNorm(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+        mean = inputs.mean(dim=-1, keepdim=True)  # -> expérence
+        var = inputs.var(dim=-1, keepdim=True, unbiased=False)  # Variance biaisée
+        
+        normalized_inputs = (inputs - mean) / torch.sqrt(var + self.eps)  # Normalisation
+        outputs = normalized_inputs * self.weight + self.bias  # Appliquer les paramètres appris
+        
+        return outputs
+
         # ==========================
         
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def reset_parameters(self):
         nn.init.ones_(self.weight)
@@ -116,9 +124,23 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+
+        batch_size, num_heads, seq_length, head_size = queries.shape
+        
+        # Compute attention scores: Q*K^T/sqrt(d)
+        scores = torch.matmul(queries, keys.transpose(-2, -1)) / torch.sqrt(torch.tensor(head_size, dtype=torch.float32))
+        
+        # causal mask 
+        mask = torch.triu(torch.ones(seq_length, seq_length), diagonal=1).bool()
+        scores.masked_fill_(mask, float('-inf'))
+        
+        # softmax 
+        attention_weights = F.softmax(scores, dim=-1)
+        
+        return attention_weights
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def apply_attention(self, queries, keys, values):
         """
@@ -178,9 +200,18 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+
+        attention_weights = self.get_attention_weights(queries, keys)
+        
+        attended_values = torch.matmul(attention_weights, values)
+        
+        concatenated = self.merge_heads(attended_values)
+        
+        return concatenated, attention_weights
+    
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
 
     def split_heads(self, tensor):
@@ -206,9 +237,14 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+        
+        batch_size_, seq_length, d_model = tensor.shape
+        x = tensor.view(batch_size_, seq_length, self.num_heads, self.head_size)
+        return x.permute(0, 2, 1, 3)  
+    
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def merge_heads(self, tensor):
         """
@@ -234,9 +270,12 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+        batch_size, num_heads, seq_length, head_size = tensor.shape
+        x = tensor.permute(0, 2, 1, 3).contiguous()
+        return x.view(batch_size, seq_length, num_heads * head_size)
         # ==========================
         
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def forward(self,  queries: Tensor, keys: Tensor, values: Tensor):
         """
@@ -293,9 +332,27 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+
+        Q = self.W_Q(queries)  
+        K = self.W_K(keys)     
+        V = self.W_V(values)   
+        
+        # 2. Séparation des tête
+        Q = self.split_heads(Q)  
+        K = self.split_heads(K)
+        V = self.split_heads(V)
+        
+        # 3. Application d l'attention
+        context, attn_weights = self.apply_attention(Q, K, V)
+        
+        # 4. Projection finale
+        outputs = self.W_O(context)  
+        
+        # Détachement des poids d'attention pour la visualisation
+        return outputs, attn_weights.clone().detach()
         # ==========================
         
-        raise NotImplementedError
+        # raise NotImplementedError
 
         # Use clone().detach() to detach attn_weights from the computation graph
         # Since we don't need to backpropagate through them, we can detach them from the graph
