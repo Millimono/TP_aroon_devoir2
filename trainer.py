@@ -51,9 +51,34 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     """
     # ==========================
     # TODO: Write your code here
+    B, S, V = logits.shape
+    
+    # Create RHS mask (tokens after '=' that aren't padding)
+    positions = torch.arange(S, device=logits.device).expand(B, S)
+    rhs_mask = (positions > eq_positions.unsqueeze(1)) & (mask.bool())
+    
+    # Compute log probabilities and gather target log probs
+    log_probs = F.log_softmax(logits, dim=-1)
+    target_log_probs = log_probs.gather(2, targets.unsqueeze(2)).squeeze(2)
+    
+    # Compute loss (negative log likelihood)
+    loss = -target_log_probs * rhs_mask.float()
+    loss_per_sample = loss.sum(dim=1) / rhs_mask.sum(dim=1).clamp(min=1)  # (B,)
+    
+    # Compute accuracy (all RHS tokens must be correct)
+    predictions = logits.argmax(dim=-1)
+    all_correct = ((predictions == targets) | ~rhs_mask).all(dim=1)  # (B,)
+    accuracy_per_sample = all_correct.float()
+    
+    # Apply reduction
+    if reduction == 'mean':
+        return loss_per_sample.mean(), accuracy_per_sample.mean()
+    elif reduction == 'sum':
+        return loss_per_sample.sum(), accuracy_per_sample.sum()
+    return loss_per_sample, accuracy_per_sample  # 'none'
     # ==========================
 
-    raise NotImplementedError
+    # raise NotImplementedError
 
     return loss, accuracy
 
