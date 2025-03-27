@@ -516,9 +516,19 @@ class GPTEmbedding(nn.Module):
 
         # ==========================
         # TODO: Write your code here
+        position_enc = torch.zeros(n_positions, dimension)
+    
+        for pos in range(n_positions):
+            for i in range(0, dimension, 2):
+                div_term = math.exp(-math.log(10000.0) * (i / dimension))
+                position_enc[pos, i] = math.sin(pos * div_term)
+                if i + 1 < dimension:
+                    position_enc[pos, i + 1] = math.cos(pos * div_term)
+        
+        return position_enc
         # ==========================
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
 
     def forward(self, tokens: Tensor) -> Tensor:
@@ -541,9 +551,18 @@ class GPTEmbedding(nn.Module):
         """
         # ==========================
         # TODO: Write your code here
+
+        token_embeddings = self.tokens(tokens)  # (B, S, D)
+
+        seq_length = tokens.size(1)
+        positional_encodings = self.position_encoding[:seq_length, :].unsqueeze(0)  # (1, S, D)
+
+        embeddings = token_embeddings + positional_encodings
+
+        return embeddings
         # ==========================
         
-        raise NotImplementedError
+        # raise NotImplementedError
 
 ########################################################################################
 ########################################################################################
@@ -611,8 +630,20 @@ class GPT(nn.Module):
                 (batch_size, num_layers, num_heads, sequence_length, sequence_length)
         """
 
-        raise NotImplementedError
+        # raise NotImplementedError
+        embeddings = self.embedding(x)  # (B, S, D)
 
+        decoder_output, (all_hidden, all_attentions) = self.decoder(embeddings)
+        # all_hidden: (num_layers, B, S, D)
+        # all_attentions: (num_layers, B, num_heads, S, S)
+
+        hidden_states = all_hidden.permute(1, 0, 2, 3)  # (B, num_layers, S, D)
+        attentions = all_attentions.permute(1, 0, 2, 3, 4)  # (B, num_layers, num_heads, S, S)
+
+        # Calcul des logits,prédiction du mot suivant
+        logits = self.classifier(decoder_output)  # (B, S, vocab_size)
+
+        return logits, hidden_states, attentions
 ########################################################################################
 ########################################################################################
 
