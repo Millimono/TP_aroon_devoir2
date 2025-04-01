@@ -60,15 +60,14 @@ class LSTMCell(nn.Module):
         # TODO: Write your code here
 
 
-        f_t = torch.sigmoid(self.forget_gate(combined))   # The Forget gate
-        i_t = torch.sigmoid(self.input_gate(combined))    # The Input gate
-        o_t = torch.sigmoid(self.output_gate(combined))   # The Output gate
-        g_t = torch.tanh(self.candidate_cell(combined))   # The Candidate cell state
+        f_t = torch.sigmoid(self.forget_gate(combined))   # Porte d'oubli
+        i_t = torch.sigmoid(self.input_gate(combined))    # Porte d'entrée
+        o_t = torch.sigmoid(self.output_gate(combined))   # Porte de sortie
+        C_tilde = torch.tanh(self.candidate_cell(combined))   # État candidat
 
-        # The Update cell state
-        c_t = f_t * c + i_t * g_t
+        # Mise à jour de la mémoire et de l'état caché
+        c_t = f_t * c + i_t * C_tilde
         
-        # The Compute new hidden state
         h_t = o_t * torch.tanh(c_t)
         
         return h_t, c_t        
@@ -248,9 +247,9 @@ class LSTMLM(nn.Module):
 
         # ==========================
         # TODO: Write your code here
-        embedded = self.embedding(x)  
-        lstm_out, hidden_states = self.lstm(embedded, hidden_states) 
-        logits = self.classifier(lstm_out)
+        emb = self.embedding(x)  
+        lstm_output, hidden_states = self.lstm(emb, hidden_states) 
+        logits = self.classifier(lstm_output)
         return logits, hidden_states
 
         # ==========================
