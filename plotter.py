@@ -53,6 +53,14 @@ def plot_loss_accs(
                     ax.plot(all_steps[j], z, '--', color=colors[j], label=f"Eval", lw=linewidth/2)
 
         else :
+              # Convertir les données de train et de test en numpy, si ce sont des tenseurs CUDA
+            train_data = statistics["train"][key]
+            if torch.is_tensor(train_data):
+                train_data = train_data.cpu().numpy()
+            test_data = statistics["test"][key]
+            if torch.is_tensor(test_data):
+                test_data = test_data.cpu().numpy()
+
             ax.plot(all_steps, statistics["train"][key], "-", color=color_1,  label=f"Train", lw=linewidth) 
             ax.plot(all_steps, statistics["test"][key], "-", color=color_2,  label=f"Eval", lw=linewidth) 
 
