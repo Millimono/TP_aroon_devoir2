@@ -126,12 +126,19 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
 
         batch_size, num_heads, seq_length, head_size = queries.shape
+
+         # Assurez-vous que le périphérique est correct (GPU ou CPU)
+        device = queries.device
         
         # Compute attention scores: Q*K^T/sqrt(d)
         scores = torch.matmul(queries, keys.transpose(-2, -1)) / torch.sqrt(torch.tensor(head_size, dtype=torch.float32))
-        
+
         # causal mask 
-        mask = torch.triu(torch.ones(seq_length, seq_length), diagonal=1).bool()
+        # mask = torch.triu(torch.ones(seq_length, seq_length), diagonal=1).bool()
+        mask = torch.triu(torch.ones(seq_length, seq_length), diagonal=1).bool().to(device)
+
+        # mask = mask.to(queries.device) 
+
         scores.masked_fill_(mask, float('-inf'))
         
         # softmax 
