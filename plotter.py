@@ -20,6 +20,7 @@ def plot_loss_accs(
     
     same_steps = False
     if multiple_runs :
+
         all_steps = statistics["all_steps"]
         same_steps = all(len(steps) == len(all_steps[0]) for steps in all_steps) # Check if all runs have the same number of steps
         if same_steps :
@@ -35,7 +36,16 @@ def plot_loss_accs(
         ax = fig.add_subplot(rows, cols, i+1)
         if multiple_runs :
             # zs = np.array(statistics["train"][key])
-            zs = np.array([t.detach().cpu().numpy() if torch.is_tensor(t) else t for t in statistics["train"][key]])
+
+            print(f"Clé: {key}, Type: {type(statistics['train'][key])}")
+            if isinstance(statistics["train"]["key"], list):
+                print(f"Exemple d'élément: {type(statistics['train'][key][0])}")
+
+
+
+            # zs = np.array([t.detach().cpu().numpy() if torch.is_tensor(t) else t for t in statistics["train"][key]])
+# Vérifiez si le tenseur est sur le GPU, puis déplacez-le vers le CPU avant de le convertir en Numpy
+            zs = np.array([t.detach().cpu().numpy() if isinstance(t, torch.Tensor) else t for t in statistics["train"][key]])
 
             if same_steps :
                 zs_mean, zs_std = np.mean(zs, axis=0), np.std(zs, axis=0)
@@ -74,7 +84,6 @@ def plot_loss_accs(
                 train_data = train_data.detach().cpu().numpy()
             elif isinstance(train_data, list):
                 train_data = np.array([t.detach().cpu().item() if isinstance(t, torch.Tensor) else t for t in train_data])
-
 
             test_data = statistics["test"][key]
             if isinstance(test_data, torch.Tensor):
