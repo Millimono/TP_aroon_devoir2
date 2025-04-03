@@ -62,8 +62,13 @@ def plot_loss_accs(
             if torch.is_tensor(test_data):
                 test_data = test_data.cpu().numpy()
 
-            ax.plot(all_steps, statistics["train"][key], "-", color=color_1,  label=f"Train", lw=linewidth) 
-            ax.plot(all_steps, statistics["test"][key], "-", color=color_2,  label=f"Eval", lw=linewidth) 
+            # ax.plot(all_steps, statistics["train"][key], "-", color=color_1,  label=f"Train", lw=linewidth) 
+            # ax.plot(all_steps, statistics["test"][key], "-", color=color_2,  label=f"Eval", lw=linewidth) 
+
+            ax.plot(all_steps, train_data, "-", color=color_1, label=f"Train", lw=linewidth) 
+            ax.plot(all_steps, test_data, "-", color=color_2, label=f"Eval", lw=linewidth)
+
+
 
         if log_x : ax.set_xscale('log')
         #if log_y : ax.set_yscale('log')
