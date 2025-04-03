@@ -34,7 +34,9 @@ def plot_loss_accs(
     for i, key in enumerate(["accuracy", "loss"]) :
         ax = fig.add_subplot(rows, cols, i+1)
         if multiple_runs :
-            zs = np.array(statistics["train"][key])
+            # zs = np.array(statistics["train"][key])
+            zs = np.array([t.detach().cpu().numpy() if torch.is_tensor(t) else t for t in statistics["train"][key]])
+
             if same_steps :
                 zs_mean, zs_std = np.mean(zs, axis=0), np.std(zs, axis=0)
                 #ax.errorbar(all_steps, zs_mean, yerr=zs_std, fmt=f'-', color=color_1, label=f"Train", lw=linewidth)
