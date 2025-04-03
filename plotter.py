@@ -62,6 +62,10 @@ def plot_loss_accs(
             # if torch.is_tensor(test_data):
             #     test_data = test_data.cpu().numpy()
 
+            
+            print(type(train_data))
+            print(train_data.device)
+
             # Convertir les données de train et de test en numpy, si ce sont des tenseurs CUDA
             train_data = statistics["train"][key]
             if isinstance(train_data, torch.Tensor):

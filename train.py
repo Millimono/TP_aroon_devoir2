@@ -215,9 +215,9 @@ def train(args):
     )
     
     # Plot
-    plot_loss_accs(
-        all_metrics, multiple_runs=False, log_x=False, log_y=False,
-        fileName=args.exp_name, filePath=checkpoint_path, show=False)
+    # plot_loss_accs(
+    #     all_metrics, multiple_runs=False, log_x=False, log_y=False,
+    #     fileName=args.exp_name, filePath=checkpoint_path, show=False)
 
     return all_metrics, checkpoint_path
 
