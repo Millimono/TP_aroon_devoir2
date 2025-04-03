@@ -57,6 +57,8 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     eq_positions = eq_positions.to(device)
     mask = mask.to(device)
     
+    print(f"📌 Device check - logits: {logits.device}, targets: {targets.device}, eq_positions: {eq_positions.device}, mask: {mask.device}")
+    
     B, S, V = logits.shape
     
     # Create RHS mask (tokens after '=' that aren't padding)
