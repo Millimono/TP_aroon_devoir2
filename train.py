@@ -215,9 +215,9 @@ def train(args):
     )
     
     # Plot
-    # plot_loss_accs(
-    #     all_metrics, multiple_runs=False, log_x=False, log_y=False,
-    #     fileName=args.exp_name, filePath=checkpoint_path, show=False)
+    plot_loss_accs(
+        all_metrics, multiple_runs=False, log_x=False, log_y=False,
+        fileName=args.exp_name, filePath=checkpoint_path, show=False)
 
     return all_metrics, checkpoint_path
 
@@ -244,9 +244,9 @@ def train_m_models(args, M:int=None, seeds:list=None):
         all_checkpoint_paths, args.exp_name, just_files=True, verbose=args.verbose)
 
     # Plot
-    # plot_loss_accs(
-    #     all_metrics, multiple_runs=True, log_x=False, log_y=False,
-    #     fileName=f'{args.exp_name}_M={M}', filePath=args.log_dir, show=False)
+    plot_loss_accs(
+        all_metrics, multiple_runs=True, log_x=False, log_y=False,
+        fileName=f'{args.exp_name}_M={M}', filePath=args.log_dir, show=False)
 
     return all_models_per_trials, all_metrics, all_checkpoint_paths
 
