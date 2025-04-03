@@ -66,10 +66,16 @@ def plot_loss_accs(
             train_data = statistics["train"][key]
             if isinstance(train_data, torch.Tensor):
                 train_data = train_data.detach().cpu().numpy()
+            elif isinstance(train_data, list):
+                train_data = np.array([t.detach().cpu().item() if isinstance(t, torch.Tensor) else t for t in train_data])
+
 
             test_data = statistics["test"][key]
             if isinstance(test_data, torch.Tensor):
                 test_data = test_data.detach().cpu().numpy()
+            elif isinstance(test_data, list):
+                test_data = np.array([t.detach().cpu().item() if isinstance(t, torch.Tensor) else t for t in test_data])
+
 
             ax.plot(all_steps, train_data, "-", color=color_1, label=f"Train", lw=linewidth) 
             ax.plot(all_steps, test_data, "-", color=color_2, label=f"Eval", lw=linewidth)
