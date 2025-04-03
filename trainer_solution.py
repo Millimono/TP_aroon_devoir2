@@ -55,6 +55,10 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     
     # Create RHS mask (tokens after '=' that aren't padding)
     positions = torch.arange(S, device=logits.device).expand(B, S)
+
+    eq_positions = eq_positions.to(logits.device)  
+    mask = mask.to(logits.device)
+
     rhs_mask = (positions > eq_positions.unsqueeze(1)) & (mask.bool())
     
     # Compute log probabilities and gather target log probs
