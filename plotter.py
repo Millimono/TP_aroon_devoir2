@@ -55,18 +55,31 @@ def plot_loss_accs(
 
         else :
               # Convertir les données de train et de test en numpy, si ce sont des tenseurs CUDA
+            # train_data = statistics["train"][key]
+            # if torch.is_tensor(train_data):
+            #     train_data = train_data.cpu().numpy()
+            # test_data = statistics["test"][key]
+            # if torch.is_tensor(test_data):
+            #     test_data = test_data.cpu().numpy()
+
+            # Convertir les données de train et de test en numpy, si ce sont des tenseurs CUDA
             train_data = statistics["train"][key]
-            if torch.is_tensor(train_data):
-                train_data = train_data.cpu().numpy()
+            if isinstance(train_data, torch.Tensor):
+                train_data = train_data.detach().cpu().numpy()
+
             test_data = statistics["test"][key]
-            if torch.is_tensor(test_data):
-                test_data = test_data.cpu().numpy()
+            if isinstance(test_data, torch.Tensor):
+                test_data = test_data.detach().cpu().numpy()
+
+            ax.plot(all_steps, train_data, "-", color=color_1, label=f"Train", lw=linewidth) 
+            ax.plot(all_steps, test_data, "-", color=color_2, label=f"Eval", lw=linewidth)
+
 
             # ax.plot(all_steps, statistics["train"][key], "-", color=color_1,  label=f"Train", lw=linewidth) 
             # ax.plot(all_steps, statistics["test"][key], "-", color=color_2,  label=f"Eval", lw=linewidth) 
 
-            ax.plot(all_steps, train_data, "-", color=color_1, label=f"Train", lw=linewidth) 
-            ax.plot(all_steps, test_data, "-", color=color_2, label=f"Eval", lw=linewidth)
+            # ax.plot(all_steps, train_data, "-", color=color_1, label=f"Train", lw=linewidth) 
+            # ax.plot(all_steps, test_data, "-", color=color_2, label=f"Eval", lw=linewidth)
 
 
 
