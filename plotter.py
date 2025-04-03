@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+import torch
 
 FIGSIZE = (6, 4)
 LINEWIDTH = 2.0
