@@ -4,6 +4,23 @@ import re
 import os
 from tqdm import tqdm
 
+
+def convert_to_cpu(tensor_or_list):
+    """
+    Cette fonction prend soit un tenseur PyTorch, soit une liste de tenseurs PyTorch et 
+    les déplace vers le CPU avant de les convertir en Numpy.
+    """
+    if isinstance(tensor_or_list, list):
+        # Si c'est une liste, applique la conversion à chaque élément de la liste
+        return np.array([convert_to_cpu(t) for t in tensor_or_list])
+    elif isinstance(tensor_or_list, torch.Tensor):
+        # Déplacer le tenseur vers le CPU si nécessaire
+        return tensor_or_list.detach().cpu().numpy()
+    else:
+        # Si ce n'est pas un tenseur ou une liste, on suppose qu'il est déjà prêt
+        return tensor_or_list
+
+
 MODEL_FILE_NAME_REGEX = rf'_state_\d+_acc=[\d.eE+-]+_loss=[\d.eE+-]+\.pth$'
 MODEL_FILE_NAME_REGEX_MATCH = rf'_state_(\d+)_acc=([\d.eE+-]+)_loss=([\d.eE+-]+)\.pth$'
 
@@ -224,6 +241,7 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
 
     # Find the minimum train loss and the step at which it was achieved
     min_train_losses = [min(losses) for losses in train_losses]
+    
     min_train_loss_steps = [steps[losses.index(min_loss)] for losses, min_loss, steps in zip(train_losses, min_train_losses, all_steps)]
     min_train_loss_mean = np.mean(min_train_losses)
     min_train_loss_std = np.std(min_train_losses)
@@ -239,8 +257,12 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     min_test_loss_step_std = np.std(min_test_loss_steps)
 
     # Find the maximum train accuracy and the step at which it was achieved
+
+    # Convertir max_train_accuracies en CPU si nécessaire, puis calculer la moyenne
     max_train_accuracies = [max(accs) for accs in train_accuracies]
     max_train_accuracy_steps = [steps[accs.index(max_acc)] for accs, max_acc, steps in zip(train_accuracies, max_train_accuracies, all_steps)]
+    max_train_accuracies = convert_to_cpu(max_train_accuracies)
+
     max_train_accuracy_mean = np.mean(max_train_accuracies)
     max_train_accuracy_std = np.std(max_train_accuracies)
     max_train_accuracy_step_mean = np.mean(max_train_accuracy_steps)
