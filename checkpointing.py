@@ -225,11 +225,11 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     """
     
     # Extract data from the dictionary
-    """all_steps = all_metrics["all_steps"] + []
+    all_steps = all_metrics["all_steps"] + []
     train_losses = all_metrics["train"]['loss'] + []
     test_losses = all_metrics["test"]['loss'] + []
     train_accuracies = all_metrics["train"]['accuracy'] + []
-    test_accuracies = all_metrics["test"]['accuracy'] + []"""
+    test_accuracies = all_metrics["test"]['accuracy'] + []
 
     def convert_to_numpy(data):
         if isinstance(data, torch.Tensor):
@@ -241,11 +241,11 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     all_metrics = {k: convert_to_numpy(v) for k, v in all_metrics.items()}
 
     # Extraction des données converties
-    train_losses = all_metrics["train"]['loss']
+    """train_losses = all_metrics["train"]['loss']
     test_losses = all_metrics["test"]['loss']
     train_accuracies = all_metrics["train"]['accuracy']
     test_accuracies = all_metrics["test"]['accuracy']
-    all_steps = all_metrics["all_steps"]
+    all_steps = all_metrics["all_steps"]"""
     
     train_losses = [convert_to_cpu(loss) for loss in all_metrics["train"]['loss']]
     test_losses = [convert_to_cpu(loss) for loss in all_metrics["test"]['loss']]
@@ -286,7 +286,7 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     max_test_accuracy_steps = [steps[np.argmax(accs)] for accs, steps in zip(test_accuracies, all_steps)]
 
 
-# Calcul des statistiques
+    # Calcul des statistiques
     min_train_loss_mean = np.mean(min_train_losses)
     min_train_loss_std = np.std(min_train_losses)
     min_train_loss_step_mean = np.mean(min_train_loss_steps)
