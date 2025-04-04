@@ -92,8 +92,8 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
 @torch.no_grad()
 def eval_model(model, loader, device) :
     model.eval()
-    acc = 0
-    loss = 0
+    acc = 0.0 
+    loss = 0.0 
     n = 0
     for batch in loader:
         batch_x, batch_y, eq_positions, mask = batch # (B, S), (B, S), (B,), (B, S)
@@ -102,7 +102,8 @@ def eval_model(model, loader, device) :
         batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask)
         n += batch_x.shape[0]
         loss += batch_loss.item() * batch_x.shape[0]
-        acc += batch_acc * batch_x.shape[0]
+        """acc += batch_acc * batch_x.shape[0]"""
+        acc += batch_acc.item() * batch_x.shape[0]  # Conversion avec .item()
 
 
     ##########
@@ -275,7 +276,10 @@ def train(
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
     }
-    torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
+    # torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
+
+    torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']:.4f}_loss={test_statistics['loss']:.4f}.pth")    
+    
     
     train_statistics = eval_model(model, train_loader_for_eval, device)
     for k, v in train_statistics.items() : all_metrics["train"][k].append(v)
