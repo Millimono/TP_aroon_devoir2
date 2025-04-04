@@ -225,12 +225,17 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     """
     
     # Extract data from the dictionary
-    all_steps = all_metrics["all_steps"] + []
+    """all_steps = all_metrics["all_steps"] + []
     train_losses = all_metrics["train"]['loss'] + []
     test_losses = all_metrics["test"]['loss'] + []
     train_accuracies = all_metrics["train"]['accuracy'] + []
-    test_accuracies = all_metrics["test"]['accuracy'] + []
+    test_accuracies = all_metrics["test"]['accuracy'] + []"""
     
+    train_losses = [convert_to_cpu(loss) for loss in all_metrics["train"]['loss']]
+    test_losses = [convert_to_cpu(loss) for loss in all_metrics["test"]['loss']]
+    train_accuracies = [convert_to_cpu(acc) for acc in all_metrics["train"]['accuracy']]
+    test_accuracies = [convert_to_cpu(acc) for acc in all_metrics["test"]['accuracy']]
+    all_steps = [convert_to_cpu(steps) for steps in all_metrics["all_steps"]]
 
     if T_max is not None :
         # The model is not evaluate every step, so if we fix a step T_max in range(n_steps),
