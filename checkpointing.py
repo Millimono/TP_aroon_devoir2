@@ -243,6 +243,8 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     min_train_losses = [min(losses) for losses in train_losses]
     
     min_train_loss_steps = [steps[losses.index(min_loss)] for losses, min_loss, steps in zip(train_losses, min_train_losses, all_steps)]
+    min_train_loss_steps = convert_to_cpu(min_train_loss_steps)
+
     min_train_loss_mean = np.mean(min_train_losses)
     min_train_loss_std = np.std(min_train_losses)
     min_train_loss_step_mean = np.mean(min_train_loss_steps)
@@ -250,7 +252,10 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
 
     # Find the minimum test loss and the step at which it was achieved
     min_test_losses = [min(losses) for losses in test_losses]
+
     min_test_loss_steps = [steps[losses.index(min_loss)] for losses, min_loss, steps in zip(test_losses, min_test_losses, all_steps)]
+    min_test_loss_steps = convert_to_cpu(min_test_loss_steps)
+
     min_test_loss_mean = np.mean(min_test_losses)
     min_test_loss_std = np.std(min_test_losses)
     min_test_loss_step_mean = np.mean(min_test_loss_steps)
@@ -260,6 +265,7 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
 
     # Convertir max_train_accuracies en CPU si nécessaire, puis calculer la moyenne
     max_train_accuracies = [max(accs) for accs in train_accuracies]
+
     max_train_accuracy_steps = [steps[accs.index(max_acc)] for accs, max_acc, steps in zip(train_accuracies, max_train_accuracies, all_steps)]
     max_train_accuracies = convert_to_cpu(max_train_accuracies)
 
@@ -271,6 +277,8 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     # Find the maximum test accuracy and the step at which it was achieved
     max_test_accuracies = [max(accs) for accs in test_accuracies]
     max_test_accuracy_steps = [steps[accs.index(max_acc)] for accs, max_acc, steps in zip(test_accuracies, max_test_accuracies, all_steps)]
+    max_test_accuracy_steps = convert_to_cpu(max_test_accuracy_steps)
+
     max_test_accuracy_mean = np.mean(max_test_accuracies)
     max_test_accuracy_std = np.std(max_test_accuracies)
     max_test_accuracy_step_mean = np.mean(max_test_accuracy_steps)
