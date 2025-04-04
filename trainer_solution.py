@@ -11,6 +11,156 @@ import time
 ########################################################################################
 ########################################################################################
 
+@torch.no_grad()
+def eval_model_by_order(model, loader, device, order):
+    """Évalue le modèle sur un type d'opération spécifique (2=binaire, 3=ternaire)"""
+    model.eval()
+    acc = 0.0
+    loss = 0.0
+    n = 0
+    eq_pos = 3 if order == 2 else 5
+    
+    for batch in loader:
+        batch_x, batch_y, eq_positions, mask = batch
+        indices = (eq_positions == eq_pos).nonzero(as_tuple=True)[0]
+        
+        if indices.numel() == 0:
+            continue
+            
+        batch_x = batch_x[indices].to(device)
+        batch_y = batch_y[indices].to(device)
+        eq_positions = eq_positions[indices].to(device)
+        mask = mask[indices].to(device)
+        
+        logits, *_ = model(batch_x)
+        batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask)
+        
+        n += batch_x.size(0)
+        loss += batch_loss.item() * batch_x.size(0)
+        acc += batch_acc.item() * batch_x.size(0)
+    
+    return {"loss": loss/n if n > 0 else 0.0, "accuracy": acc/n if n > 0 else 0.0}
+
+def train_with_separate_metrics(
+    model, train_loader, train_loader_for_eval, test_loader, optimizer, scheduler, device, 
+    exp_name: str, checkpoint_path: str,
+    n_steps: int, eval_first: int = 0, eval_period: int = 1, print_step: int = 1, 
+    save_model_step: int = 1, save_statistic_step: int = 1, verbose: bool = True
+):
+    """Ceci est une Nouvelle version avec suivi séparé des métriques binaires/ternaires
+    pour mieux répondre à la question 4.2"""
+    
+    # Initialisation des métriques étendues
+    all_metrics = defaultdict(lambda: [])
+    all_metrics.update({
+        'steps': [],
+        'global_train_loss': [], 'global_train_acc': [],
+        'global_val_loss': [], 'global_val_acc': [],
+        'binary_train_loss': [], 'binary_train_acc': [],
+        'binary_val_loss': [], 'binary_val_acc': [],
+        'ternary_train_loss': [], 'ternary_train_acc': [],
+        'ternary_val_loss': [], 'ternary_val_acc': []
+    })
+
+    # Fonction d'évaluation spécifique
+    def eval_by_order(loader, order):
+        model.eval()
+        eq_pos = 3 if order == 2 else 5
+        total_loss, total_acc, count = 0.0, 0.0, 0
+        
+        for batch_x, batch_y, eq_positions, mask in loader:
+            indices = (eq_positions == eq_pos).nonzero(as_tuple=True)[0]
+            if indices.numel() == 0:
+                continue
+                
+            x = batch_x[indices].to(device)
+            y = batch_y[indices].to(device)
+            pos = eq_positions[indices].to(device)
+            m = mask[indices].to(device)
+            
+            logits, *_ = model(x)
+            loss, acc = get_loss_and_accuracy(logits, y, pos, m)
+            
+            total_loss += loss.item() * x.size(0)
+            total_acc += acc.item() * x.size(0)
+            count += x.size(0)
+        
+        return {
+            'loss': total_loss / count if count > 0 else 0.0,
+            'accuracy': total_acc / count if count > 0 else 0.0
+        }
+
+    # Configuration initiale
+    os.makedirs(checkpoint_path, exist_ok=True)
+    total_epochs = (n_steps + len(train_loader) - 1) // len(train_loader)
+    cur_step = 1
+
+    # Boucle d'entraînement principale
+    for epoch in tqdm(range(1, total_epochs + 1), desc="Training"):
+        for batch in train_loader:
+            # Forward/backward 
+            batch_x, batch_y, eq_positions, mask = batch
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+            
+            optimizer.zero_grad()
+            logits, *_ = model(batch_x)
+            loss, _ = get_loss_and_accuracy(logits, batch_y, eq_positions, mask)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+
+            # Évaluation périodique
+            if cur_step % eval_period == 0 or cur_step <= eval_first:
+                # Métriques globales
+                global_train = eval_model(model, train_loader_for_eval, device)
+                global_val = eval_model(model, test_loader, device)
+                
+                # Métriques séparées
+                binary_train = eval_by_order(train_loader_for_eval, 2)
+                ternary_train = eval_by_order(train_loader_for_eval, 3)
+                binary_val = eval_by_order(test_loader, 2)
+                ternary_val = eval_by_order(test_loader, 3)
+
+                # Mise à jour des métriques
+                metrics_to_update = {
+                    'steps': cur_step,
+                    'global_train_loss': global_train['loss'],
+                    'global_train_acc': global_train['accuracy'],
+                    'global_val_loss': global_val['loss'],
+                    'global_val_acc': global_val['accuracy'],
+                    'binary_train_loss': binary_train['loss'],
+                    'binary_train_acc': binary_train['accuracy'],
+                    'binary_val_loss': binary_val['loss'],
+                    'binary_val_acc': binary_val['accuracy'],
+                    'ternary_train_loss': ternary_train['loss'],
+                    'ternary_train_acc': ternary_train['accuracy'],
+                    'ternary_val_loss': ternary_val['loss'],
+                    'ternary_val_acc': ternary_val['accuracy']
+                }
+                
+                for key, value in metrics_to_update.items():
+                    all_metrics[key].append(value)
+
+            # Logging et sauvegardes
+            if verbose and (cur_step % print_step == 0):
+                print(f"Step {cur_step}")
+                print(f"Binary Train Loss: {binary_train['loss']:.4f} Acc: {binary_train['accuracy']:.2%}")
+                print(f"Ternary Train Loss: {ternary_train['loss']:.4f} Acc: {ternary_train['accuracy']:.2%}")
+
+            if cur_step % save_model_step == 0:
+                torch.save({
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'metrics': all_metrics
+                }, f"{checkpoint_path}/{exp_name}_step_{cur_step}.pt")
+
+            cur_step += 1
+            if cur_step > n_steps: 
+                break
+
+    return all_metrics
+
+
 def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean'):
     """
     Computes the mean negative log-likelihood loss and the accuracy on the right-hand side (RHS)
