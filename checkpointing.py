@@ -230,6 +230,18 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     test_losses = all_metrics["test"]['loss'] + []
     train_accuracies = all_metrics["train"]['accuracy'] + []
     test_accuracies = all_metrics["test"]['accuracy'] + []"""
+
+    def convert_to_numpy(data):
+        if isinstance(data, torch.Tensor):
+            return data.detach().cpu().numpy()
+        elif isinstance(data, list):
+            return [convert_to_numpy(x) for x in data]
+        elif isinstance(data, dict):
+            return {k: convert_to_numpy(v) for k, v in data.items()}
+        else:
+            return data
+
+    all_metrics = convert_to_numpy(all_metrics)  # Conversion complète
     
     train_losses = [convert_to_cpu(loss) for loss in all_metrics["train"]['loss']]
     test_losses = [convert_to_cpu(loss) for loss in all_metrics["test"]['loss']]

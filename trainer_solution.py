@@ -285,7 +285,7 @@ def train(
     for k, v in train_statistics.items() : all_metrics["train"][k].append(v)
 
     test_statistics = eval_model(model, test_loader, device)
-    for k, v in test_statistics.items() : all_metrics["test"][k].append(v)
+    for k, v in test_statistics.items() : all_metrics["test"][k].append(v.item() if isinstance(v, torch.Tensor) else v)
 
     all_metrics["all_steps"].append(cur_step)
     all_metrics["steps_epoch"][cur_step] = epoch
@@ -294,3 +294,11 @@ def train(
     torch.save(to_save, f"{checkpoint_path}/{exp_name}.pth")
 
     return all_metrics
+
+"""# Dans la boucle d'évaluation, remplacer :
+for k, v in test_statistics.items():
+    all_metrics["test"][k].append(v)
+
+# Par :
+for k, v in test_statistics.items():
+    all_metrics["test"][k].append(v.item() if isinstance(v, torch.Tensor) else v)"""
