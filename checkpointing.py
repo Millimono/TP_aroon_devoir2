@@ -274,7 +274,15 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     # Pour les pertes (loss)
     min_train_losses = [np.min(losses) for losses in train_losses]
     min_train_loss_steps = [steps[np.argmin(losses)] for losses, steps in zip(train_losses, all_steps)]
-    
+     # Vérification et calcul des stats
+    if not min_train_losses:
+        raise ValueError("Aucune donnée de perte d'entraînement trouvée")
+    min_train_loss_mean = np.mean(min_train_losses)
+    min_train_loss_std = np.std(min_train_losses)
+    min_train_loss_step_mean = np.mean(min_train_loss_steps)
+    min_train_loss_step_std = np.std(min_train_loss_steps)
+
+
     min_test_losses = [np.min(losses) for losses in test_losses]
     min_test_loss_steps = [steps[np.argmin(losses)] for losses, steps in zip(test_losses, all_steps)]
     
@@ -287,10 +295,10 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
 
 
     # Calcul des statistiques
-    min_train_loss_mean = np.mean(min_train_losses)
+    """min_train_loss_mean = np.mean(min_train_losses)
     min_train_loss_std = np.std(min_train_losses)
     min_train_loss_step_mean = np.mean(min_train_loss_steps)
-    min_train_loss_step_std = np.std(min_train_loss_steps)
+    min_train_loss_step_std = np.std(min_train_loss_steps)"""
 
     min_test_loss_mean = np.mean(min_test_losses)
     min_test_loss_std = np.std(min_test_losses)
