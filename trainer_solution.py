@@ -452,3 +452,10 @@ for k, v in test_statistics.items():
 # Par :
 for k, v in test_statistics.items():
     all_metrics["test"][k].append(v.item() if isinstance(v, torch.Tensor) else v)"""
+
+
+########################################################################################
+# Nouvelle fonction exportée
+def train_with_separate_metrics(*args, **kwargs):
+    return train(*args, **kwargs)  # Utilise la fonction train() modifiée
+########################################################################################
