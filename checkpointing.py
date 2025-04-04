@@ -285,31 +285,21 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
 
     min_test_losses = [np.min(losses) for losses in test_losses]
     min_test_loss_steps = [steps[np.argmin(losses)] for losses, steps in zip(test_losses, all_steps)]
-    
-    # Pour les précisions (accuracy)
-    max_train_accuracies = [np.max(accs) for accs in train_accuracies]
-    max_train_accuracy_steps = [steps[np.argmax(accs)] for accs, steps in zip(train_accuracies, all_steps)]
-    
-    max_test_accuracies = [np.max(accs) for accs in test_accuracies]
-    max_test_accuracy_steps = [steps[np.argmax(accs)] for accs, steps in zip(test_accuracies, all_steps)]
-
-
-    # Calcul des statistiques
-    """min_train_loss_mean = np.mean(min_train_losses)
-    min_train_loss_std = np.std(min_train_losses)
-    min_train_loss_step_mean = np.mean(min_train_loss_steps)
-    min_train_loss_step_std = np.std(min_train_loss_steps)"""
 
     min_test_loss_mean = np.mean(min_test_losses)
     min_test_loss_std = np.std(min_test_losses)
     min_test_loss_step_mean = np.mean(min_test_loss_steps)
     min_test_loss_step_std = np.std(min_test_loss_steps)
-
+    
+    max_train_accuracies = [np.max(accs) for accs in train_accuracies]
+    max_train_accuracy_steps = [steps[np.argmax(accs)] for accs, steps in zip(train_accuracies, all_steps)]
     max_train_accuracy_mean = np.mean(max_train_accuracies)
     max_train_accuracy_std = np.std(max_train_accuracies)
     max_train_accuracy_step_mean = np.mean(max_train_accuracy_steps)
     max_train_accuracy_step_std = np.std(max_train_accuracy_steps)
 
+    max_test_accuracies = [np.max(accs) for accs in test_accuracies]
+    max_test_accuracy_steps = [steps[np.argmax(accs)] for accs, steps in zip(test_accuracies, all_steps)]
     max_test_accuracy_mean = np.mean(max_test_accuracies)
     max_test_accuracy_std = np.std(max_test_accuracies)
     max_test_accuracy_step_mean = np.mean(max_test_accuracy_steps)
