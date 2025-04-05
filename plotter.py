@@ -249,3 +249,59 @@ def plot_loss_accs(
         plt.show()
     else:
         plt.close()
+
+
+def plot_loss_accs_besoin_exo_4_4_b(all_metrics, fileName=None, filePath=None, show=True):
+    """Version validée avec les bonnes clés"""
+    
+    fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+    
+    # Loss Binaire
+    axs[0,0].plot(all_metrics['steps'], all_metrics['binary_train_loss'], label='Train')
+    axs[0,0].plot(all_metrics['steps'], all_metrics['binary_val_loss'], label='Val')
+    axs[0,0].set_title('Binary Loss')
+    axs[0,0].legend()
+    
+    # Accuracy Binaire
+    axs[0,1].plot(all_metrics['steps'], all_metrics['binary_train_acc'], label='Train')
+    axs[0,1].plot(all_metrics['steps'], all_metrics['binary_val_acc'], label='Val')
+    axs[0,1].set_title('Binary Accuracy')
+    axs[0,1].legend()
+    
+    # Loss Ternaire
+    axs[1,0].plot(all_metrics['steps'], all_metrics['ternary_train_loss'], label='Train')
+    axs[1,0].plot(all_metrics['steps'], all_metrics['ternary_val_loss'], label='Val')
+    axs[1,0].set_title('Ternary Loss')
+    axs[1,0].legend()
+    
+    # Accuracy Ternaire
+    axs[1,1].plot(all_metrics['steps'], all_metrics['ternary_train_acc'], label='Train')
+    axs[1,1].plot(all_metrics['steps'], all_metrics['ternary_val_acc'], label='Val')
+    axs[1,1].set_title('Ternary Accuracy')
+    axs[1,1].legend()
+
+    plt.tight_layout()
+    
+    if fileName and filePath:
+        os.makedirs(filePath, exist_ok=True)
+        plt.savefig(f"{filePath}/{fileName}.png", dpi=300, bbox_inches='tight')
+    
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+"""# Test avec les BONNES clés
+dummy_metrics = {
+    'steps': [0, 100, 200],
+    'binary_train_loss': [2.1, 0.9, 0.3],
+    'binary_val_loss': [2.3, 1.1, 0.4],
+    'binary_train_acc': [0.1, 0.5, 0.8],
+    'binary_val_acc': [0.05, 0.4, 0.7],
+    'ternary_train_loss': [3.0, 1.5, 0.6],
+    'ternary_val_loss': [3.2, 1.8, 0.9],
+    'ternary_train_acc': [0.0, 0.3, 0.6],
+    'ternary_val_acc': [0.0, 0.2, 0.5]
+}
+
+plot_loss_accs(dummy_metrics)  # ✅ Fonctionne maintenant !"""
